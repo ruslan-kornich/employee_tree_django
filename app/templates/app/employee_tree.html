@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% block content %}
+    <div class="row justify-content-md-center">
+        <h3>{{ employees|length }} of {{ count_all }} records are shown </h3>
+    </div>
+    <div class="row mt-5">
+        {% for emp in employees %}
+            <div id="{{ emp.id }}" class="col-7 offset-{{ emp.level }}">
+                <b>{{ emp.full_name }}:</b> {{ emp.position }} &nbsp;
+            </div>
+
+        {% endfor %}
+    </div>
+{% endblock %}
+</body>
