@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-5 ml-auto">
+            <h1><span id='emp_count'>{{ employees|length }}</span> records displayed</h1>
+        </div>
+        <div class="col-2 ml-auto">
+
+        </div>
+    </div>
+    <form id="table_form" class="form reusable" enctype="multipart/form-data">
+        <table class="table table-sm">
+            <thead>
+            <tr>
+                {% for field,nm in form_names %}
+                    <th>
+                        <div class="d-flex justify-content-center">
+                            <div class="pd-2">
+                            </div>
+                            <div class="p-2">{{ nm }}</div>
+                            <div class="pd-2">
+                            </div>
+                        </div>
+                    </th>
+                {% endfor %}
+            </tr>
+
+            <tr>
+                {% for field in form %}
+                    <th>
+                        </div>
+                    </th>
+                {% endfor %}
+            </tr>
+            </thead>
+
+
+            <tbody class="can_update">
+            {% for emp in employees.object_list %}
+                <tr>
+                    <td>
+                        {{ emp.id }}
+                    </td>
+                    <td>
+                        {{ emp.full_name }}
+                    </td>
+                    <td>
+                        {{ emp.position }}
+                    </td>
+                    <td width="10%">
+                        {{ emp.hire_date }}
+                    </td>
+                    <td width="10%">
+                        {{ emp.email }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
+{% endblock %}
