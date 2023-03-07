@@ -20,7 +20,7 @@ class TableForm(forms.Form):
 class EmployeesForm(forms.ModelForm):
     class Meta:
         model = Employee
-        fields = ["full_name", "position", "hire_date", "email", "parent"]
+        fields = ["name", "position", "hire_date", "email", "department"]
         widgets = {
             "full_name": forms.TextInput(
                 attrs={"class": "form-control", "placeholder": "Full name"}

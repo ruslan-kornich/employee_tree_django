@@ -1,15 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
-
 {% block content %}
-    <div class="row">
-        <div class="col-5 ml-auto">
-            <h1><span id='emp_count'>{{ employees|length }}</span> records displayed</h1>
-        </div>
-        <div class="col-2 ml-auto">
-
-        </div>
-    </div>
     <form id="table_form" class="form reusable" enctype="multipart/form-data">
         <table class="table table-sm">
             <thead>
@@ -44,7 +34,7 @@
                         {{ emp.id }}
                     </td>
                     <td>
-                        {{ emp.full_name }}
+                        {{ emp.name }}
                     </td>
                     <td>
                         {{ emp.position }}

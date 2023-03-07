@@ -5,17 +5,142 @@
     <title>Title</title>
 </head>
 <body>
-{% block content %}
-    <div class="row justify-content-md-center">
-        <h3>{{ employees|length }} of {{ count_all }} records are shown </h3>
-    </div>
-    <div class="row mt-5">
-        {% for emp in employees %}
-            <div id="{{ emp.id }}" class="col-7 offset-{{ emp.level }}">
-                <b>{{ emp.full_name }}:</b> {{ emp.position }} &nbsp;
-            </div>
 
-        {% endfor %}
+{% block content %}
+<script type="text/javascript">
+    function addToTree(root, els, elstype) {
+        var treeview = root.closest('.treeview');
+        var symbolClosed = treeview.getAttribute('symbol-closed');
+        var symbolOpened = treeview.getAttribute('symbol-opened');
+        els.forEach(function (el) {
+            let newli = document.createElement('li');
+            let newdiv = document.createElement('div');
+            let newp = document.createElement('p');
+            let text = document.createTextNode((elstype == 'detail') ? el : el.name);
+            if (elstype != 'detail' && (elstype == 'employee' || elstype == 'department')) {
+                let newa = document.createElement('a');
+                let newspan = document.createElement('span');
+                newspan.innerHTML = symbolClosed;
+                newa.className = 'sc';
+                newa.setAttribute(elstype,el.id);
+                newa.appendChild(newspan);
+                newa.appendChild(text);
+                newa.addEventListener('click', function (event) { eventClick(event); });
+                newp.appendChild(newa);
+            }
+            else {
+                newp.appendChild(text);
+            }
+            newdiv.appendChild(newp);
+            newli.appendChild(newdiv);
+            root.getElementsByTagName('a')[0].setAttribute('data-load','loaded');
+            root.getElementsByTagName('ul')[0].appendChild(newli);
+        });
+    }
+
+    function dataload(err, data, li) {
+        if (err == null) {
+            let delli = li.getElementsByTagName('li')[0]
+            delli.parentNode.removeChild(delli);
+            if (data.hasOwnProperty('departments')) {
+                addToTree(li, data.departments, 'department');
+            }
+            if (data.hasOwnProperty('employees')) {
+                addToTree(li, data.employees, 'employee');
+            }
+            if (data.hasOwnProperty('detail')) {
+                addToTree(li, data.detail, 'detail');
+            }
+        }
+        else {
+            alert('Помилка завантаження');
+            alert(err);
+        }
+    }
+
+    function toggleTree( eThis ){
+        var treeview = eThis.closest('.treeview');
+        var symbolClosed = treeview.getAttribute('symbol-closed');
+        var symbolOpened = treeview.getAttribute('symbol-opened');
+
+        if (!eThis.hasAttribute('data-load')) {
+            eThis.setAttribute('data-load','loading');
+            let li = eThis.closest('li');
+            let newli = document.createElement('li');
+            let newdiv = document.createElement('div');
+            let newp = document.createElement('p');
+            newp.innerHTML = 'Завантаження...';
+            newdiv.appendChild(newp);
+            newli.appendChild(newdiv);
+            let newul = document.createElement('ul');
+            newul.appendChild(newli);
+            li.appendChild(newul);
+            if (eThis.getAttribute('department') == 'root') {
+                getJSON('{% url 'treeview-api-root' %}', dataload, li);
+            }
+            else if (eThis.hasAttribute('department')) {
+                getJSON('{% url 'treeview-api' %}/'+eThis.getAttribute('department'), dataload, li);
+            }
+            else if (eThis.hasAttribute('employee')) {
+                getJSON('{% url 'treeview-api' %}/detail/'+eThis.getAttribute('employee'), dataload, li);
+            }
+        }
+
+        if( eThis.getElementsByTagName('span')[0].childNodes[0].nodeValue.charAt(0) == symbolClosed ){
+            eThis.getElementsByTagName('span')[0].childNodes[0].nodeValue = symbolOpened
+            eThis.parentNode.parentNode.parentNode.className = '';
+        } else{
+            eThis.getElementsByTagName('span')[0].childNodes[0].nodeValue = symbolClosed
+            eThis.parentNode.parentNode.parentNode.className = 'cl';
+        }
+        return false;
+    }
+
+    function eventClick(event) {
+        var targetElement = event.target || event.srcElement;
+        if (targetElement.tagName != 'A') {
+            targetElement = targetElement.parentElement;
+        }
+        if (targetElement.tagName == 'A') {
+            toggleTree(targetElement);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        var treeviews = document.getElementsByClassName('treeview')
+        Array.prototype.forEach.call(treeviews, function(treeview) {
+            var symbolClosed = treeview.getAttribute('symbol-closed');
+            var symbolOpened = treeview.getAttribute('symbol-opened');
+            let lis = treeview.getElementsByTagName('li');
+            Array.prototype.forEach.call(lis, function(li) {
+                if (li.getElementsByTagName('ul').length == 0) {
+                    let newdiv = document.createElement('div');
+                    let newp = document.createElement('p');
+                    let newa = document.createElement('a');
+                    let newspan = document.createElement('span');
+                    newspan.innerHTML = symbolClosed;
+                    newa.className = 'sc';
+                    newa.setAttribute('department','root');
+                    newa.appendChild(newspan);
+                    let text = document.createTextNode(li.childNodes[0].nodeValue);
+                    newa.appendChild(text);
+                    newp.appendChild(newa);
+                    newdiv.appendChild(newp);
+                    li.childNodes[0].nodeValue = ''
+                    li.insertBefore(newdiv, li.firstChild);
+                    li.className = 'cl';
+                    li.getElementsByTagName('a')[0].addEventListener('click', function (event) {
+                        eventClick(event);
+                    });
+                }
+            });
+        });
+    });
+</script>
+    <div class="treeview" symbol-closed="&#9658;" symbol-opened="&#9660;">
+        <ul>
+            <li>Співробітники</li>
+        </ul>
     </div>
 {% endblock %}
 </body>

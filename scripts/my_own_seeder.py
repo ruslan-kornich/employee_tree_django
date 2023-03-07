@@ -17,7 +17,7 @@ def first_record():
 
 def fill_up_data_base(count, position, year, parent_min, parent_max):
     seeder = Seed.seeder("uk_UA")
-    fake = Faker('uk_UA')
+    fake = Faker("uk_UA")
     seeder.add_entity(
         Employee,
         count,
