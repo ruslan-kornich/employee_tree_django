@@ -6,7 +6,7 @@
             <h1><span id='emp_count'>{{ employees|length }}</span> записів відображено </h1>
         </div>
         <div class="col-2 ml-auto">
-            <button class="btn btn-light" onclick="createButton();">
+            <button class="btn btn-light" color="green" onclick="createButton();">
                 Створити запис
             </button>
         </div>
@@ -44,7 +44,8 @@
                             {{ field }}
                             <div class="input-group-append">
                                 <button class="btn btn-success col-4 pl-2" type="button"
-                                        onclick="SSP('sort_by','{{ field.name }}');" title="Search"><i class="fa fa-play" aria-hidden="true"></i>
+                                        onclick="SSP('sort_by','{{ field.name }}');" title="Search"><i
+                                        class="fa fa-play" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -57,8 +58,10 @@
             {% for emp in employees.object_list %}
                 <tr>
                     <th id="{{ emp.id }}" class="{{ emp.parent_id }}"><b>{{ emp.id }}</b>
-                        <button type="button" class="btn btn-danger" onclick="CRUD('del',{{ emp.id }});" ><i class="fa fa-trash"></i></button>
-                        <button type="button" class="btn btn-secondary" onclick="updateButton({{ emp.id }});"><i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                        <button type="button" class="btn btn-danger" onclick="CRUD('del',{{ emp.id }});"><i
+                                class="fa fa-trash"></i></button>
+                        <button type="button" class="btn btn-secondary" onclick="updateButton({{ emp.id }});"><i
+                                class="fa fa-pencil-square-o" aria-hidden="true"></i>
                         </button>
                     </th>
                     <td>
@@ -262,7 +265,7 @@
             if (mm < 10) mm = '0' + mm;
             var yy = date.getFullYear();
             if (yy < 10) yy = '0' + yy;
-            return yy + '-' + mm + '-' + dd ;
+            return yy + '-' + mm + '-' + dd;
         }
 
         // Rewriting a table when new data was received

@@ -33,5 +33,4 @@ def json_data_table(queryset, server_response):
             "count": queryset.paginator.count,
         }
     )
-    print(li["p"])
     return JsonResponse(li)
