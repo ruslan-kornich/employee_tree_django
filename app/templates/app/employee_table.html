@@ -3,7 +3,7 @@
 {% block content %}
     <div class="row">
         <div class="col-5 ml-auto">
-            <h1><span id='emp_count'>{{ employees|length }}</span> records displayed</h1>
+            <h1><span id='emp_count'>{{ employees|length }}</span> записів відображено </h1>
         </div>
         <div class="col-2 ml-auto">
             <button class="btn btn-light" onclick="createButton();">
@@ -43,8 +43,8 @@
                         <div class="input-group">
                             {{ field }}
                             <div class="input-group-append">
-                                <button class="btn btn-success col-2 pl-1" type="button"
-                                        onclick="SSP('sort_by','{{ field.name }}');" title="Search">S
+                                <button class="btn btn-success col-4 pl-2" type="button"
+                                        onclick="SSP('sort_by','{{ field.name }}');" title="Search"><i class="fa fa-play" aria-hidden="true"></i>
                                 </button>
                             </div>
                         </div>
@@ -57,8 +57,8 @@
             {% for emp in employees.object_list %}
                 <tr>
                     <th id="{{ emp.id }}" class="{{ emp.parent_id }}"><b>{{ emp.id }}</b>
-                        <button type="button" class="btn btn-danger" onclick="CRUD('del',{{ emp.id }});">del</button>
-                        <button type="button" class="btn btn-secondary" onclick="updateButton({{ emp.id }});">upd
+                        <button type="button" class="btn btn-danger" onclick="CRUD('del',{{ emp.id }});" ><i class="fa fa-trash"></i></button>
+                        <button type="button" class="btn btn-secondary" onclick="updateButton({{ emp.id }});"><i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                         </button>
                     </th>
                     <td>
@@ -119,7 +119,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="ModalCenterTitle">New employee</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрити">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -138,7 +138,7 @@
 
                 </div>
                 <div class="modal-footer">
-                    <button id="btc" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="btc" type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
                 </div>
             </div>
         </div>
@@ -160,8 +160,8 @@
         function createButton() {
             $('#myModalBody').html(modal_form_html);            // Create form for rebuilding
             setInputsValue('');
-            changeButtonCU('Create', 'CRUD(\'create\',0);');    // Change form button text + onclick value
-            showModal('New record', '', form = true);
+            changeButtonCU('Створити', 'CRUD(\'create\',0);');    // Change form button text + onclick value
+            showModal('Новий запис', '', form = true);
         }
 
         // When create | update | delete a record (CreateUpdateDeleteRecord)
@@ -180,7 +180,7 @@
             form_data.append('page', 1)
             form_data.append(operation, id);
 
-            showModal(title, 'Please wait, while operation in progress...');
+            showModal(title, 'Зачекайте, поки триває операція...');
             $.ajax({
                 url: "/ajax_table",
                 data: form_data,
@@ -202,7 +202,7 @@
         function updateButton(id) {
             $('#myModalBody').html(modal_form_html);     // Create form for rebuilding
             setInputsValue($('#' + id));
-            changeButtonCU('Update', 'CRUD(\'update\',' + id + ');');
+            changeButtonCU('Оновити', 'CRUD(\'update\',' + id + ');');
             showModal('Ви можете оновити запис', '', form = true);
         }
 
@@ -262,7 +262,7 @@
             if (mm < 10) mm = '0' + mm;
             var yy = date.getFullYear();
             if (yy < 10) yy = '0' + yy;
-            return dd + '-' + mm + '-' + yy;
+            return yy + '-' + mm + '-' + dd ;
         }
 
         // Rewriting a table when new data was received
@@ -274,9 +274,9 @@
                 rows += '<tr>' +
                     '<th id="' + resp[i].id + '" class="' + resp[i].par + '"><b>' + resp[i].id + ' </b>' +
                     '<button type="button" class="btn btn-danger" onclick="CRUD(\'del\', ' +
-                    resp[i].id + ');">del</button>' +
+                    resp[i].id + ');"><i class="fa fa-trash"></i></button>' +
                     '&nbsp;<button type="button" class="btn btn-secondary" onclick="updateButton(' +
-                    resp[i].id + ')">upd</button>' +
+                    resp[i].id + ')"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></button>' +
                     '</th>' +
                     '<td>' + resp[i].nm + '</td>' +
                     '<td>' + resp[i].pos + '</td>' +
@@ -318,17 +318,23 @@
             if ($this) {
                 name = $.trim($this.siblings().eq(0).text());        // getting name
                 position = $.trim($this.siblings().eq(1).text());    // getting pos
-                email = $.trim($this.siblings().eq(3).text());       // getting email
+                email = $.trim($this.siblings().eq(3).text());
+                hire_date = $.trim($this.siblings().eq(2).text());
+                department_id = $this.attr("class");
 
             } else {
                 name = '';
                 position = '';
                 email = '';
+                hire_date = '';
+                department_id = '';
 
             }
             $('#update_create_form').find('#id_name').attr("value", name);
             $('#update_create_form').find('#id_position').attr("value", position);
             $('#update_create_form').find('#id_email').attr("value", email); // filling in the fields value
+            $('#update_create_form').find('#id_hire_date').attr("value", hire_date);
+            $('#update_create_form').find('#id_department').attr("value", department_id);// filling in the fields value
 
         }
 

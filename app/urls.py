@@ -13,5 +13,5 @@ urlpatterns = [
     path("table/", views.employee_table, name="employee-table"),
     path("ajax_table", views.ajax_table),
     path("table/login/", views.login_manager, name="login"),
-    path("logout/", views.logout, name="logout"),
+    path("logout/", views.logout_manager, name="logout"),
 ]

@@ -89,17 +89,16 @@ def employee_table(request):
             "employee_form": employee_form,
             "page": pages,
         }
-        print(data)
         return render(request, template_name="app/employee_table.html", context=data)
 
     else:
-        data = {"text": "No login"}
+        data = {"text": "Незареєстрований користувач, увійдіть"}
         return render(request, template_name="app/login.html", context=data)
 
 
 def logout_manager(request):
     logout(request)
-    data = {"text": "You’ve Been Logged Out"}
+    data = {"text": "Ви вийшли з системи"}
     return render(request, template_name="app/login.html", context=data)
 
 
@@ -112,7 +111,7 @@ def login_manager(request):
             login(request, user)
             return redirect(reverse("employee-table"))  # success page
         else:
-            data = {"text": "There is no such user"}
+            data = {"text": "Такого користувача немає"}
             return render(request, template_name="app/login.html", context=data)
     else:
         data = {"text": "Ви можете авторизуватися"}
@@ -122,10 +121,7 @@ def login_manager(request):
 @csrf_protect
 def ajax_table(request):
     if request.method == "POST" and request.user.is_authenticated:
-        server_response = ""
         emps = Employee.objects
-        print(request.POST)
-        print(request.FILES)
 
         if "del" in request.POST:
             del_id = int(request.POST["del"])  # deleted object id
@@ -142,7 +138,7 @@ def ajax_table(request):
                 bound_form.save()
                 server_response = "Створено новий запис"
             else:
-                server_response = "Будь ласка, заповніть поля імені та ID департаменту"
+                server_response = "Будь ласка, перевірте правильність вказаних данних"
 
         if "update" in request.POST:
             emp_id = request.POST["update"]
@@ -152,7 +148,7 @@ def ajax_table(request):
                 bound_form.save()
                 server_response = "Запис було оновлено"
             else:
-                server_response = "Будь ласка, заповніть поля імені та ID департаменту"
+                server_response = "Будь ласка, перевірте правильність вказаних данних"
 
         if "search" in request.POST:  # if search button was pressed
             search = request.POST["search"]  # which field to serch
