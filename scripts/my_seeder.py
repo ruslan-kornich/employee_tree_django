@@ -6,22 +6,20 @@ from faker import Faker
 from app.models import Employee, Department
 
 
-def first_record():
-    employee = Employee(
-        name="Зінченко Лада Левівна",
-        position="Генеральний директор",
-        hire_date="2010-02-16",
-        email="director@i.ua",
-        department=Department.objects.get(id=1),
-    )
-    employee.save()
-
-
-def create_department():
-    seeder = Seed.seeder("uk_UA")
-    fake = Faker("uk_UA")
+def first_create_department():
+    seeder = Seed.seeder()
+    fake = Faker("ru_RU")
     with Department.objects.disable_mptt_updates():
-        seeder.add_entity(Department, 10, {"name": lambda x: "Відділ " + fake.bs()})
+        seeder.add_entity(Department, 20, {"name": lambda x: fake.bs()})
+        seeder.execute()
+
+
+def second_department():
+    seeder = Seed.seeder()
+    fake = Faker("ru_RU")
+    with Department.objects.disable_mptt_updates():
+        seeder.add_entity(Department, 50, {"name": lambda x: fake.bs(),
+                                           "parent": random.randint(1, 19)})
         seeder.execute()
 
 
@@ -43,7 +41,6 @@ def fill_up_data_base(count, position, year):
 
 
 def run():
-    first_record()
     create_department()
     fill_up_data_base(10, "Регіональний директор", 2010)
     fill_up_data_base(100, "Директор по збуту продукції", 2011)
