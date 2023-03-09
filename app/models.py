@@ -3,7 +3,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 
 class Department(MPTTModel):
-    name = models.CharField("Підрозділ", max_length=50, unique=True)
+    name = models.CharField("Підрозділ", max_length=50)
     parent = TreeForeignKey(
         "self",
         on_delete=models.CASCADE,
