@@ -3,14 +3,14 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 
 class Department(MPTTModel):
-    name = models.CharField("Подразделение", max_length=50, unique=True)
+    name = models.CharField("Підрозділ", max_length=50, unique=True)
     parent = TreeForeignKey(
         "self",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="children",
-        verbose_name="Находится в подразделении",
+        verbose_name="Знаходиться у підрозділі",
     )
 
     class Meta:
@@ -25,10 +25,10 @@ class Department(MPTTModel):
 
 
 class Employee(models.Model):
-    name = models.CharField("ПІБ", max_length=50)
-    position = models.CharField("Посада", max_length=50)
-    hire_date = models.DateField("Дата прийому")
-    email = models.EmailField("Email", max_length=254)
+    name = models.CharField("ПІБ", max_length=50, blank=False)
+    position = models.CharField("Посада", max_length=50, blank=False)
+    hire_date = models.DateField("Дата прийому", blank=True, null=True)
+    email = models.EmailField("Email", max_length=254, blank=False)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
     class Meta:

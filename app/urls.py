@@ -11,6 +11,7 @@ urlpatterns = [
         "api/get/detail/<int:eip>", views.employee_tree_api_detail, name="treeview-api"
     ),
     path("table/", views.employee_table, name="employee-table"),
+    path("ajax_table", views.ajax_table),
     path("table/login/", views.login_manager, name="login"),
     path("logout/", views.logout, name="logout"),
 ]

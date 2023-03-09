@@ -1,5 +1,17 @@
 {% extends 'base.html' %}
+{% load static %}
 {% block content %}
+    <div class="row">
+        <div class="col-5 ml-auto">
+            <h1><span id='emp_count'>{{ employees|length }}</span> records displayed</h1>
+        </div>
+        <div class="col-2 ml-auto">
+            <button class="btn btn-light" onclick="createButton();">
+                Створити запис
+            </button>
+        </div>
+    </div>
+
     <form id="table_form" class="form reusable" enctype="multipart/form-data">
         <table class="table table-sm">
             <thead>
@@ -8,9 +20,17 @@
                     <th>
                         <div class="d-flex justify-content-center">
                             <div class="pd-2">
+                                <button type="button" class="btn btn-link" onclick="SSP('sort_by','{{ field.name }}');"
+                                        title="Sort">
+                                    &#8744;
+                                </button>
                             </div>
                             <div class="p-2">{{ nm }}</div>
                             <div class="pd-2">
+                                <button type="button" class="btn btn-link" onclick="SSP('sort_by','-{{ field.name }}');"
+                                        title="Sort">
+                                    &#8743;
+                                </button>
                             </div>
                         </div>
                     </th>
@@ -20,19 +40,27 @@
             <tr>
                 {% for field in form %}
                     <th>
+                        <div class="input-group">
+                            {{ field }}
+                            <div class="input-group-append">
+                                <button class="btn btn-success col-2 pl-1" type="button"
+                                        onclick="SSP('sort_by','{{ field.name }}');" title="Search">S
+                                </button>
+                            </div>
                         </div>
                     </th>
                 {% endfor %}
             </tr>
             </thead>
 
-
             <tbody class="can_update">
             {% for emp in employees.object_list %}
                 <tr>
-                    <td>
-                        {{ emp.id }}
-                    </td>
+                    <th id="{{ emp.id }}" class="{{ emp.parent_id }}"><b>{{ emp.id }}</b>
+                        <button type="button" class="btn btn-danger" onclick="CRUD('del',{{ emp.id }});">del</button>
+                        <button type="button" class="btn btn-secondary" onclick="updateButton({{ emp.id }});">upd
+                        </button>
+                    </th>
                     <td>
                         {{ emp.name }}
                     </td>
@@ -50,4 +78,315 @@
             </tbody>
         </table>
     </form>
+
+    <nav id="pagination" aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="javascript:SSP('page','1')" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                        <span class="sr-only">Previous</span>
+                    </a>
+                </li>
+            {% endif %}
+            {% for n in page.paginator.page_range %}
+                {% if n == page.number %}
+                    <li class="page-item active">
+                        <a class="page-link" href="javascript:SSP('page',{{ n }})">{{ n }}<span class="sr-only">(current)</span></a>
+                    </li>
+                {% elif n > page.number|add:-4 and n < page.number|add:4 %} <!-- -->
+                    <li class="page-item"><a class="page-link" href="javascript:SSP('page','{{ n }}')">{{ n }}</a></li>
+                {% endif %}
+            {% endfor %}
+            {% if page.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="javascript:SSP('page','{{ page.paginator.num_pages }}')"
+                       aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                        <span class="sr-only">Next</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endblock %}
+
+
+{% block modal %}
+    <div class="modal fade" id="ModalCenter" tabindex="-1" role="dialog" aria-labelledby="ModalCenterTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ModalCenterTitle">New employee</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body reusable" id="myModalBody">
+
+                    <form id="update_create_form" class="form" enctype="multipart/form-data">
+                        {% for field in employee_form %}
+                            <div class="form-group">
+                                {{ field }}
+                            </div>
+                        {% endfor %}
+                        <button id="btn_c_u" class="btn btn-primary" type="button" onclick="CRUD('create',0);">Create
+                            record
+                        </button>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="btc" type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block script %}
+    <script>
+
+        $(function () {
+            fixed_footer();
+        });
+
+        // Getting HTML of a modal form
+        var modal_form_html = $('#myModalBody').html();
+
+        // When click 'create record' button
+        function createButton() {
+            $('#myModalBody').html(modal_form_html);            // Create form for rebuilding
+            setInputsValue('');
+            changeButtonCU('Create', 'CRUD(\'create\',0);');    // Change form button text + onclick value
+            showModal('New record', '', form = true);
+        }
+
+        // When create | update | delete a record (CreateUpdateDeleteRecord)
+        function CRUD(operation, id) {
+            var form_data = getFormData('#update_create_form');
+            var title = '';
+            if (operation == 'create') {
+                title = 'Створення запису';
+            } else if (operation == 'update') {
+                title = 'Оновлення запису';
+            } else {
+                title = 'Видалення запису';
+            }
+            if (operation != 'del' && checkEmptyFields()) return; // Check empty 'Inputs' in a modal form
+
+            form_data.append('page', 1)
+            form_data.append(operation, id);
+
+            showModal(title, 'Please wait, while operation in progress...');
+            $.ajax({
+                url: "/ajax_table",
+                data: form_data,
+                processData: false,
+                contentType: false,
+                cache: false,
+                success: function (resp) {
+                    rows_count = rewriteTable(resp.q);
+                    changeText('#emp_count', rows_count);   // changine the employees count label
+                    showModal(title, resp.s_res);
+                    fixed_footer();
+                    timerCloseModal(2000);
+                }
+            });
+
+        }
+
+        // When click 'upd' button
+        function updateButton(id) {
+            $('#myModalBody').html(modal_form_html);     // Create form for rebuilding
+            setInputsValue($('#' + id));
+            changeButtonCU('Update', 'CRUD(\'update\',' + id + ');');
+            showModal('Ви можете оновити запис', '', form = true);
+        }
+
+        // When Sort | Search | Paginate clicked
+        function SSP(s, param) {
+            form_data = getFormData('#table_form');
+            form_data.append(s, param);
+            if (s != 'page') {
+                form_data.append('page', 1);
+            } else {
+                var search = '';
+                var serch_request = '';
+                var form = '#table_form';
+                $(form).find('input').each(function () {
+                    if ($(this).val()) {
+                        search = $(this).attr('name');
+                        serch_request = $(this).val();
+                        return;
+                    }
+                });
+                if (search) {
+                    form_data.append('search', search);
+                    form_data.append(search, serch_request);
+                }
+            }
+            $.ajax({
+                url: "/ajax_table",
+                data: form_data,
+                processData: false,
+                contentType: false,
+                cache: false,
+                success: function (resp) {
+                    rows_count = rewriteTable(resp.q);
+                    rewritePaginator(resp.p[0]);
+                    changeText('#emp_count', rows_count);   // changine the employees count label
+                    fixed_footer();
+                }
+            });
+        }
+
+
+        // Getting data from a form
+        function getFormData(selector) {
+            var form_data = new FormData();
+            var arr = $(selector).serializeArray();     // getting the form data
+
+            for (var i = 0; i < arr.length; i++)          // rewrite data for a POST request from ajax
+                form_data.append(arr[i].name, arr[i].value);
+
+            return form_data;
+        }
+
+        function formatDate(date) {
+            var dd = date.getDate();
+            if (dd < 10) dd = '0' + dd;
+            var mm = date.getMonth() + 1;
+            if (mm < 10) mm = '0' + mm;
+            var yy = date.getFullYear();
+            if (yy < 10) yy = '0' + yy;
+            return dd + '-' + mm + '-' + yy;
+        }
+
+        // Rewriting a table when new data was received
+        function rewriteTable(resp) {
+            var rows = "";
+            var emp_count = resp.length;
+            for (var i = 0; i < emp_count; i++) {
+                var date = new Date(resp[i].dt);
+                rows += '<tr>' +
+                    '<th id="' + resp[i].id + '" class="' + resp[i].par + '"><b>' + resp[i].id + ' </b>' +
+                    '<button type="button" class="btn btn-danger" onclick="CRUD(\'del\', ' +
+                    resp[i].id + ');">del</button>' +
+                    '&nbsp;<button type="button" class="btn btn-secondary" onclick="updateButton(' +
+                    resp[i].id + ')">upd</button>' +
+                    '</th>' +
+                    '<td>' + resp[i].nm + '</td>' +
+                    '<td>' + resp[i].pos + '</td>' +
+                    '<td width="10%">' + formatDate(date) + '</td>' +
+                    '<td width="10%">' + resp[i].sl + '</td>' +
+                    '</tr>';
+            }
+            $(".can_update").html(rows);      // rendering a table rows
+            return emp_count;
+        }
+
+        // Showing a modal window
+        function showModal(title, content, form = false) {
+            $('#ModalCenterTitle').text(title);
+            if (!form) {
+                $('#myModalBody').html(content);
+            }
+            $('#ModalCenter').modal('show');
+
+        }
+
+        function changeText(selector, text) {
+            $(selector).text(text);
+        }
+
+        function changeButtonCU(text, onclick) {
+            $('#btn_c_u').text(text)
+            $('#btn_c_u').attr('onclick', onclick);
+        }
+
+        function timerCloseModal(tm) {
+            setTimeout(function () {
+                $('#ModalCenter').modal('hide');
+            }, tm);
+        }
+
+        // Set the input value of a modal form
+        function setInputsValue($this) {
+            if ($this) {
+                name = $.trim($this.siblings().eq(0).text());        // getting name
+                position = $.trim($this.siblings().eq(1).text());    // getting pos
+                email = $.trim($this.siblings().eq(3).text());       // getting email
+
+            } else {
+                name = '';
+                position = '';
+                email = '';
+
+            }
+            $('#update_create_form').find('#id_name').attr("value", name);
+            $('#update_create_form').find('#id_position').attr("value", position);
+            $('#update_create_form').find('#id_email').attr("value", email); // filling in the fields value
+
+        }
+
+        // Checking empty <input> fields, when Update or Create
+        function checkEmptyFields() {
+            var form = '#update_create_form';
+            $(form).find('input').each(function () {
+                if ($(this).attr('id') != 'id_photo')
+                    if ($(this).val() != '') {
+                        $(this).removeClass('empty_field');
+                    } else {
+                        $(this).addClass('empty_field');
+                    }
+            });
+            if ($('.empty_field').length) {
+                $(form).find('.empty_field').css({'border-color': '#d8512d'});
+                setTimeout(function () {
+                    $(form).find('.empty_field').removeAttr('style');
+                }, 500);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        function rewritePaginator(resp) {
+            var lft = '';
+            var pg = '';
+            var rgt = '';
+            var count = resp.num_pages + 1;
+            if (resp.has_prev)
+                lft = '<li class="page-item">\
+                            <a class="page-link" href="javascript:SSP(\'page\',\'1\')" aria-label="Previous">\
+                                <span aria-hidden="true">&laquo;</span>\
+                                <span class="sr-only">Previous</span>\
+                            </a>\
+                        </li>'
+
+            for (var n = 1; n < count; n++) {
+                if (n == resp.number)
+                    pg += '<li class="page-item active">\
+               <a class="page-link" href="javascript:SSP(\'page\',\'' + n + '\')">' + n + '<span class="sr-only">(current)</span></a>\
+            </li>'
+                else if (n > resp.number - 4 && n < resp.number + 4)
+                    pg += '<li class="page-item"><a class="page-link" href="javascript:SSP(\'page\',\'' + n + '\')">' + n + '</a></li>'
+            }
+            if (resp.has_next)
+                rgt = '<li class="page-item">\
+                            <a class="page-link" href="javascript:SSP(\'page\',\'' + resp.num_pages + '\')" aria-label="Next">\
+                                <span aria-hidden="true">&raquo;</span>\
+                                <span class="sr-only">Next</span>\
+                            </a>\
+                        </li>'
+            var pg_html = '<ul class="pagination">' + lft + pg + rgt + '</ul>';
+            if (resp.count)
+                $('#pagination').html(pg_html);
+            else
+                $('#pagination').html('');
+        }
+    </script>
 {% endblock %}
